@@ -371,19 +371,24 @@
             }
         }
 
-        // Função de login com Microsoft
-        async function loginWithMicrosoft() {
-            const loginAlert = document.getElementById('loginAlert');
-            const microsoftBtn = document.getElementById('microsoftBtn');
-
-            try {
-                // Criar provider da Microsoft
-                const provider = new firebase.auth.OAuthProvider('microsoft.com');
-                
-                // Configurar escopos opcionais (se necessário)
-                provider.setCustomParameters({
-                    prompt: 'select_account'
-                });
+            // Função de login com Microsoft - Versão Debug
+            async function loginWithMicrosoft() {
+                const loginAlert = document.getElementById('loginAlert');
+                const microsoftBtn = document.getElementById('microsoftBtn');
+            
+                try {
+                    console.log('🚀 Iniciando login Microsoft...');
+                    
+                    // Criar provider da Microsoft
+                    const provider = new firebase.auth.OAuthProvider('microsoft.com');
+                    
+                    // Configurar escopos
+                    provider.setCustomParameters({
+                        prompt: 'select_account',
+                        tenant: 'common'
+                    });
+            
+                    console.log('🔧 Provider configurado
 
                 // Fazer login com popup
                 microsoftBtn.disabled = true;
@@ -459,7 +464,6 @@
                 }, 3000);
             }
         }
-
         // Permitir login com Enter
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -468,4 +472,5 @@
         });
     </script>
 </body>
+
 </html>
