@@ -372,72 +372,63 @@
         }
 
         // Função de login com Microsoft - Versão Debug
-        async function loginWithMicrosoft() {
-            const loginAlert = document.getElementById('loginAlert');
-            const microsoftBtn = document.getElementById('microsoftBtn');
+// Função de login com Microsoft - CORRIGIDA
+async function loginWithMicrosoft() {
+    const loginAlert = document.getElementById('loginAlert');
+    const microsoftBtn = document.getElementById('microsoftBtn');
+
+    try {
+        console.log('🚀 Iniciando login Microsoft...');
         
-            try {
-                console.log('🚀 Iniciando login Microsoft...');
-                
-                // Criar provider da Microsoft
-                const provider = new firebase.auth.OAuthProvider('microsoft.com');
-                
-                // Configurar escopos
-                provider.setCustomParameters({
-                    prompt: 'select_account',
-                    tenant: 'common'
-                });
+        // Criar provider da Microsoft
+        const provider = new firebase.auth.OAuthProvider('microsoft.com');
         
-                console.log('🔧 Provider configurado:', provider);
-                
-                // Fazer login com popup
-                microsoftBtn.disabled = true;
-                console.log('📋 Abrindo popup...');
-                
-                const result = await auth.signInWithPopup(provider);
-                console.log('✅ Login bem-sucedido:', result.user);
-                
-                showAlert('Login com Microsoft realizado com sucesso!', 'success', loginAlert);
-                
-                // Redirecionar para o sistema
-                setTimeout(() => {
-                    showMainSystem(result.user);
-                }, 1000);
+        // ✅ REMOVER ou ALTERAR a linha do tenant:
+        // provider.setCustomParameters({
+        //     prompt: 'select_account'
+        //     // REMOVER: tenant: 'common'
+        // });
+
+        console.log('🔧 Provider configurado:', provider);
         
-            } catch (error) {
-                console.error('❌ Erro detalhado:', error);
-                console.log('🔍 Código do erro:', error.code);
-                console.log('🔍 Mensagem do erro:', error.message);
-                
-                let errorMessage = 'Erro ao fazer login com Microsoft. ';
-                
-                switch (error.code) {
-                    case 'auth/popup-blocked':
-                        errorMessage += 'Popup bloqueado pelo navegador. Permita popups para este site.';
-                        break;
-                    case 'auth/popup-closed-by-user':
-                        errorMessage = 'Login cancelado pelo usuário.';
-                        break;
-                    case 'auth/unauthorized-domain':
-                        errorMessage += 'Domínio não autorizado. Verifique as configurações no Azure.';
-                        // Informações adicionais para debug
-                        errorMessage += ` Domínio atual: ${window.location.hostname}`;
-                        break;
-                    case 'auth/operation-not-allowed':
-                        errorMessage += 'Provedor não habilitado no Firebase. Verifique o console do Firebase.';
-                        break;
-                    case 'auth/config-not-found':
-                        errorMessage += 'Configuração do Firebase não encontrada.';
-                        break;
-                    default:
-                        errorMessage += `Código: ${error.code} - Mensagem: ${error.message}`;
-                }
-                
-                showAlert(errorMessage, 'error', loginAlert);
-            } finally {
-                microsoftBtn.disabled = false;
-            }
+        // Fazer login com popup
+        microsoftBtn.disabled = true;
+        console.log('📋 Abrindo popup...');
+        
+        const result = await auth.signInWithPopup(provider);
+        console.log('✅ Login bem-sucedido:', result.user);
+        
+        showAlert('Login com Microsoft realizado com sucesso!', 'success', loginAlert);
+        
+        // Redirecionar para o sistema
+        setTimeout(() => {
+            showMainSystem(result.user);
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ Erro detalhado:', error);
+        
+        let errorMessage = 'Erro ao fazer login com Microsoft. ';
+        
+        switch (error.code) {
+            case 'auth/popup-blocked':
+                errorMessage += 'Popup bloqueado pelo navegador. Permita popups para este site.';
+                break;
+            case 'auth/popup-closed-by-user':
+                errorMessage = 'Login cancelado pelo usuário.';
+                break;
+            case 'auth/unauthorized-domain':
+                errorMessage += 'Domínio não autorizado. Verifique as configurações no Azure.';
+                break;
+            default:
+                errorMessage += `Código: ${error.code} - Mensagem: ${error.message}`;
         }
+        
+        showAlert(errorMessage, 'error', loginAlert);
+    } finally {
+        microsoftBtn.disabled = false;
+    }
+}
 
         // Função de logout
         function logout() {
@@ -488,6 +479,7 @@
 </body>
 
 </html>
+
 
 
 
