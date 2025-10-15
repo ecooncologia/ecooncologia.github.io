@@ -44,11 +44,30 @@
             border-radius: 10px;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            height: 120px;
+            width: auto;
+        }
+        
+        .header-text {
+            text-align: center;
         }
         
         h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
         }
         
         .tabs {
@@ -135,13 +154,21 @@
             background-color: var(--color-dark-green);
         }
         
-        .participant-list {
+        button.edit {
+            background-color: #ffa500;
+        }
+        
+        button.edit:hover {
+            background-color: #ff8c00;
+        }
+        
+        .participant-list, .event-list, .winners-list {
             margin-top: 20px;
             max-height: 400px;
             overflow-y: auto;
         }
         
-        .participant-item {
+        .participant-item, .event-item, .winner-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -149,15 +176,15 @@
             border-bottom: 1px solid #eee;
         }
         
-        .participant-item:nth-child(even) {
+        .participant-item:nth-child(even), .event-item:nth-child(even), .winner-item:nth-child(even) {
             background-color: var(--color-light-gray);
         }
         
-        .participant-info {
+        .participant-info, .event-info, .winner-info {
             flex: 1;
         }
         
-        .participant-actions {
+        .participant-actions, .event-actions {
             display: flex;
             gap: 10px;
         }
@@ -227,17 +254,45 @@
             color: var(--color-dark-green);
         }
         
+        .event-selector {
+            background-color: var(--color-light-gray);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .event-selector select {
+            margin-top: 10px;
+        }
+        
+        .datetime-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .datetime-group > div {
+            flex: 1;
+        }
+        
+        .edit-form {
+            background-color: var(--color-light-gray);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #ffa500;
+        }
+        
         @media (max-width: 768px) {
             .tabs {
                 flex-direction: column;
             }
             
-            .participant-item {
+            .participant-item, .event-item, .winner-item {
                 flex-direction: column;
                 align-items: flex-start;
             }
             
-            .participant-actions {
+            .participant-actions, .event-actions {
                 margin-top: 10px;
                 width: 100%;
             }
@@ -245,30 +300,83 @@
             .action-btn {
                 flex: 1;
             }
+            
+            .datetime-group {
+                flex-direction: column;
+            }
+            
+            .logo-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .logo {
+                height: 60px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Sistema de Presença e Sorteio</h1>
-            <p>Controle de participantes e sorteios</p>
+            <div class="logo-container">
+                <img src="https://imgur.com/jtUnYEx.png" alt="Logo Sistema de Presença" class="logo">
+                <div class="header-text">
+                    <h1>Sistema de Presença</h1>
+                    <p>Controle de participantes e sorteios</p>
+                </div>
+            </div>
         </header>
         
         <div class="tabs">
-            <div class="tab active" data-tab="presence">Lista de Presença</div>
+            <div class="tab active" data-tab="events">Eventos</div>
+            <div class="tab" data-tab="presence">Lista de Presença</div>
             <div class="tab" data-tab="draw">Sorteio</div>
+            <div class="tab" data-tab="winners">Ganhadores</div>
             <div class="tab" data-tab="stats">Estatísticas</div>
         </div>
         
-        <div class="tab-content active" id="presence">
+        <div class="tab-content active" id="events">
+            <div class="form-group">
+                <label for="eventName">Nome do Evento</label>
+                <input type="text" id="eventName" placeholder="Digite o nome do evento" maxlength="50">
+            </div>
+            <div class="datetime-group">
+                <div class="form-group">
+                    <label for="eventDate">Data do Evento</label>
+                    <input type="date" id="eventDate">
+                </div>
+                <div class="form-group">
+                    <label for="eventTime">Horário do Evento</label>
+                    <input type="time" id="eventTime">
+                </div>
+            </div>
+            <button id="addEvent">Adicionar Evento</button>
+            
+            <div class="event-list" id="eventList">
+                <!-- Lista de eventos será carregada aqui -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="presence">
+            <div class="event-selector">
+                <label for="selectedEvent">Selecione o Evento:</label>
+                <select id="selectedEvent">
+                    <option value="">Selecione um evento</option>
+                </select>
+            </div>
+            
             <div class="form-group">
                 <label for="participantName">Nome do Participante</label>
-                <input type="text" id="participantName" placeholder="Digite o nome completo">
+                <input type="text" id="participantName" placeholder="Digite o nome completo" maxlength="50">
             </div>
             <div class="form-group">
-                <label for="participantEmail">E-mail</label>
-                <input type="email" id="participantEmail" placeholder="Digite o e-mail">
+                <label for="participantPhone">Telefone</label>
+                <input type="tel" id="participantPhone" placeholder="(00) 00000-0000" maxlength="15">
             </div>
             <button id="addParticipant">Adicionar Participante</button>
             
@@ -278,6 +386,13 @@
         </div>
         
         <div class="tab-content" id="draw">
+            <div class="event-selector">
+                <label for="drawEvent">Selecione o Evento para o Sorteio:</label>
+                <select id="drawEvent">
+                    <option value="">Selecione um evento</option>
+                </select>
+            </div>
+            
             <div class="draw-section">
                 <h2>Sorteio de Participantes</h2>
                 <p>Clique no botão abaixo para sortear um participante presente</p>
@@ -305,7 +420,28 @@
             </div>
         </div>
         
+        <div class="tab-content" id="winners">
+            <div class="event-selector">
+                <label for="winnersEvent">Selecione o Evento para ver os Ganhadores:</label>
+                <select id="winnersEvent">
+                    <option value="">Selecione um evento</option>
+                </select>
+            </div>
+            
+            <h2>Ganhadores</h2>
+            <div class="winners-list" id="winnersList">
+                <!-- Lista de ganhadores será carregada aqui -->
+            </div>
+        </div>
+        
         <div class="tab-content" id="stats">
+            <div class="event-selector">
+                <label for="statsEvent">Selecione o Evento para Estatísticas:</label>
+                <select id="statsEvent">
+                    <option value="">Selecione um evento</option>
+                </select>
+            </div>
+            
             <h2>Estatísticas</h2>
             <div class="stats">
                 <div class="stat-card">
@@ -343,15 +479,27 @@
         const database = firebase.database();
         
         // Referências
+        const eventsRef = database.ref('events');
         const participantsRef = database.ref('participants');
+        const winnersRef = database.ref('winners');
         
         // Elementos da UI
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
+        const eventNameInput = document.getElementById('eventName');
+        const eventDateInput = document.getElementById('eventDate');
+        const eventTimeInput = document.getElementById('eventTime');
+        const addEventBtn = document.getElementById('addEvent');
+        const eventList = document.getElementById('eventList');
+        const selectedEventSelect = document.getElementById('selectedEvent');
+        const drawEventSelect = document.getElementById('drawEvent');
+        const winnersEventSelect = document.getElementById('winnersEvent');
+        const statsEventSelect = document.getElementById('statsEvent');
         const participantNameInput = document.getElementById('participantName');
-        const participantEmailInput = document.getElementById('participantEmail');
+        const participantPhoneInput = document.getElementById('participantPhone');
         const addParticipantBtn = document.getElementById('addParticipant');
         const participantList = document.getElementById('participantList');
+        const winnersList = document.getElementById('winnersList');
         const drawButton = document.getElementById('drawButton');
         const winnerDisplay = document.getElementById('winnerDisplay');
         const exportDataBtn = document.getElementById('exportData');
@@ -366,11 +514,17 @@
         const statsPercentageEl = document.getElementById('statsPercentage');
         
         // Variáveis
+        let events = [];
         let participants = [];
+        let winners = [];
+        let selectedEventId = '';
+        let editingEventId = null;
         
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
+            loadEvents();
             loadParticipants();
+            loadWinners();
             setupEventListeners();
         });
         
@@ -395,14 +549,262 @@
                 });
             });
             
+            // Adicionar evento
+            addEventBtn.addEventListener('click', addEvent);
+            
+            // Selecionar evento
+            selectedEventSelect.addEventListener('change', function() {
+                selectedEventId = this.value;
+                updateParticipantList();
+            });
+            
+            drawEventSelect.addEventListener('change', updateDrawStats);
+            winnersEventSelect.addEventListener('change', updateWinnersList);
+            statsEventSelect.addEventListener('change', updateStats);
+            
             // Adicionar participante
             addParticipantBtn.addEventListener('click', addParticipant);
+            
+            // Formatação do telefone
+            participantPhoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d{0,4})(\d{0,4})/, '($1) $2-$3');
+                } else {
+                    value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+                }
+                
+                e.target.value = value;
+            });
             
             // Realizar sorteio
             drawButton.addEventListener('click', performDraw);
             
             // Exportar dados
             exportDataBtn.addEventListener('click', exportData);
+        }
+        
+        // Carregar eventos do Firebase
+        function loadEvents() {
+            eventsRef.on('value', (snapshot) => {
+                events = [];
+                eventList.innerHTML = '';
+                selectedEventSelect.innerHTML = '<option value="">Selecione um evento</option>';
+                drawEventSelect.innerHTML = '<option value="">Selecione um evento</option>';
+                winnersEventSelect.innerHTML = '<option value="">Selecione um evento</option>';
+                statsEventSelect.innerHTML = '<option value="">Selecione um evento</option>';
+                
+                snapshot.forEach((childSnapshot) => {
+                    const event = childSnapshot.val();
+                    event.id = childSnapshot.key;
+                    events.push(event);
+                    
+                    // Adicionar à lista
+                    addEventToUI(event);
+                    
+                    // Adicionar aos selects
+                    const option = document.createElement('option');
+                    option.value = event.id;
+                    option.textContent = `${event.name} - ${formatDate(event.date)} ${event.time ? `- ${event.time}` : ''}`;
+                    
+                    selectedEventSelect.appendChild(option.cloneNode(true));
+                    drawEventSelect.appendChild(option.cloneNode(true));
+                    winnersEventSelect.appendChild(option.cloneNode(true));
+                    statsEventSelect.appendChild(option);
+                });
+            });
+        }
+        
+        // Adicionar evento à UI
+        function addEventToUI(event) {
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.id = `event-${event.id}`;
+            
+            eventItem.innerHTML = `
+                <div class="event-info">
+                    <strong>${event.name}</strong>
+                    <div>${formatDate(event.date)} ${event.time ? `- ${event.time}` : ''}</div>
+                </div>
+                <div class="event-actions">
+                    <button class="action-btn edit" data-id="${event.id}" data-action="edit">
+                        Editar
+                    </button>
+                    <button class="action-btn secondary" data-id="${event.id}" data-action="delete">
+                        Excluir
+                    </button>
+                </div>
+            `;
+            
+            eventList.appendChild(eventItem);
+            
+            // Adicionar event listeners aos botões
+            const editBtn = eventItem.querySelector('[data-action="edit"]');
+            const deleteBtn = eventItem.querySelector('[data-action="delete"]');
+            
+            editBtn.addEventListener('click', () => editEvent(event.id));
+            deleteBtn.addEventListener('click', () => deleteEvent(event.id));
+        }
+        
+        // Adicionar novo evento
+        function addEvent() {
+            const name = eventNameInput.value.trim();
+            const date = eventDateInput.value;
+            const time = eventTimeInput.value;
+            
+            if (!name) {
+                alert('Por favor, insira o nome do evento.');
+                return;
+            }
+            
+            if (!date) {
+                alert('Por favor, selecione a data do evento.');
+                return;
+            }
+            
+            const newEvent = {
+                name: name,
+                date: date,
+                time: time,
+                timestamp: new Date().toISOString()
+            };
+            
+            eventsRef.push(newEvent)
+                .then(() => {
+                    eventNameInput.value = '';
+                    eventDateInput.value = '';
+                    eventTimeInput.value = '';
+                })
+                .catch((error) => {
+                    console.error('Erro ao adicionar evento:', error);
+                    alert('Erro ao adicionar evento. Tente novamente.');
+                });
+        }
+        
+        // Editar evento
+        function editEvent(eventId) {
+            const event = events.find(e => e.id === eventId);
+            
+            if (!event) return;
+            
+            // Se já está editando este evento, cancela a edição
+            if (editingEventId === eventId) {
+                cancelEdit();
+                return;
+            }
+            
+            // Cancela qualquer edição em andamento
+            cancelEdit();
+            
+            // Define o evento que está sendo editado
+            editingEventId = eventId;
+            
+            // Encontra o item do evento na UI
+            const eventItem = document.getElementById(`event-${eventId}`);
+            
+            // Cria o formulário de edição
+            const editForm = document.createElement('div');
+            editForm.className = 'edit-form';
+            editForm.id = `edit-form-${eventId}`;
+            editForm.innerHTML = `
+                <h3>Editando Evento</h3>
+                <div class="form-group">
+                    <label for="editEventName">Nome do Evento</label>
+                    <input type="text" id="editEventName" value="${event.name}" maxlength="50">
+                </div>
+                <div class="datetime-group">
+                    <div class="form-group">
+                        <label for="editEventDate">Data do Evento</label>
+                        <input type="date" id="editEventDate" value="${event.date}">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEventTime">Horário do Evento</label>
+                        <input type="time" id="editEventTime" value="${event.time || ''}">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="action-btn" id="saveEdit-${eventId}">Salvar</button>
+                    <button class="action-btn secondary" id="cancelEdit-${eventId}">Cancelar</button>
+                </div>
+            `;
+            
+            // Adiciona o formulário após o item do evento
+            eventItem.after(editForm);
+            
+            // Adiciona event listeners aos botões do formulário
+            document.getElementById(`saveEdit-${eventId}`).addEventListener('click', () => saveEvent(eventId));
+            document.getElementById(`cancelEdit-${eventId}`).addEventListener('click', cancelEdit);
+        }
+        
+        // Salvar evento editado
+        function saveEvent(eventId) {
+            const name = document.getElementById('editEventName').value.trim();
+            const date = document.getElementById('editEventDate').value;
+            const time = document.getElementById('editEventTime').value;
+            
+            if (!name) {
+                alert('Por favor, insira o nome do evento.');
+                return;
+            }
+            
+            if (!date) {
+                alert('Por favor, selecione a data do evento.');
+                return;
+            }
+            
+            const updatedEvent = {
+                name: name,
+                date: date,
+                time: time
+            };
+            
+            // Atualiza no Firebase
+            database.ref(`events/${eventId}`).update(updatedEvent)
+                .then(() => {
+                    cancelEdit();
+                    alert('Evento atualizado com sucesso!');
+                })
+                .catch((error) => {
+                    console.error('Erro ao atualizar evento:', error);
+                    alert('Erro ao atualizar evento. Tente novamente.');
+                });
+        }
+        
+        // Cancelar edição
+        function cancelEdit() {
+            if (editingEventId) {
+                const editForm = document.getElementById(`edit-form-${editingEventId}`);
+                if (editForm) {
+                    editForm.remove();
+                }
+                editingEventId = null;
+            }
+        }
+        
+        // Excluir evento
+        function deleteEvent(eventId) {
+            if (confirm('Tem certeza que deseja excluir este evento? Todos os participantes e ganhadores associados também serão excluídos.')) {
+                // Excluir evento
+                database.ref(`events/${eventId}`).remove()
+                    .then(() => {
+                        // Excluir participantes associados a este evento
+                        const participantsToDelete = participants.filter(p => p.eventId === eventId);
+                        participantsToDelete.forEach(participant => {
+                            database.ref(`participants/${participant.id}`).remove();
+                        });
+                        
+                        // Excluir ganhadores associados a este evento
+                        const winnersToDelete = winners.filter(w => w.eventId === eventId);
+                        winnersToDelete.forEach(winner => {
+                            database.ref(`winners/${winner.id}`).remove();
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao excluir evento:', error);
+                        alert('Erro ao excluir evento. Tente novamente.');
+                    });
+            }
         }
         
         // Carregar participantes do Firebase
@@ -415,12 +817,64 @@
                     const participant = childSnapshot.val();
                     participant.id = childSnapshot.key;
                     participants.push(participant);
-                    
-                    // Adicionar à lista
-                    addParticipantToUI(participant);
                 });
                 
+                updateParticipantList();
+                updateDrawStats();
                 updateStats();
+            });
+        }
+        
+        // Carregar ganhadores do Firebase
+        function loadWinners() {
+            winnersRef.on('value', (snapshot) => {
+                winners = [];
+                winnersList.innerHTML = '';
+                
+                snapshot.forEach((childSnapshot) => {
+                    const winner = childSnapshot.val();
+                    winner.id = childSnapshot.key;
+                    winners.push(winner);
+                });
+                
+                updateWinnersList();
+            });
+        }
+        
+        // Atualizar lista de participantes baseada no evento selecionado
+        function updateParticipantList() {
+            participantList.innerHTML = '';
+            
+            if (!selectedEventId) {
+                return;
+            }
+            
+            const eventParticipants = participants.filter(p => p.eventId === selectedEventId);
+            
+            eventParticipants.forEach(participant => {
+                addParticipantToUI(participant);
+            });
+        }
+        
+        // Atualizar lista de ganhadores baseada no evento selecionado
+        function updateWinnersList() {
+            winnersList.innerHTML = '';
+            
+            const eventId = winnersEventSelect.value;
+            
+            if (!eventId) {
+                return;
+            }
+            
+            const eventWinners = winners.filter(w => w.eventId === eventId);
+            
+            if (eventWinners.length === 0) {
+                winnersList.innerHTML = '<div class="winner-item">Nenhum ganhador registrado para este evento.</div>';
+                return;
+            }
+            
+            eventWinners.forEach(winner => {
+                addWinnerToUI(winner);
             });
         }
         
@@ -436,7 +890,7 @@
             participantItem.innerHTML = `
                 <div class="participant-info">
                     <strong>${participant.name}</strong>
-                    <div>${participant.email}</div>
+                    <div>${participant.phone}</div>
                 </div>
                 <div class="participant-actions">
                     <button class="action-btn ${statusClass}" data-id="${participant.id}" data-action="toggle">
@@ -458,19 +912,42 @@
             deleteBtn.addEventListener('click', () => deleteParticipant(participant.id));
         }
         
+        // Adicionar ganhador à UI
+        function addWinnerToUI(winner) {
+            const winnerItem = document.createElement('div');
+            winnerItem.className = 'winner-item';
+            winnerItem.id = `winner-${winner.id}`;
+            
+            winnerItem.innerHTML = `
+                <div class="winner-info">
+                    <strong>${winner.winnerName}</strong>
+                    <div>Telefone: ${winner.winnerPhone}</div>
+                    <div>Sorteado em: ${formatDateTime(winner.timestamp)}</div>
+                </div>
+            `;
+            
+            winnersList.appendChild(winnerItem);
+        }
+        
         // Adicionar novo participante
         function addParticipant() {
             const name = participantNameInput.value.trim();
-            const email = participantEmailInput.value.trim();
+            const phone = participantPhoneInput.value.trim();
             
             if (!name) {
                 alert('Por favor, insira o nome do participante.');
                 return;
             }
             
+            if (!selectedEventId) {
+                alert('Por favor, selecione um evento.');
+                return;
+            }
+            
             const newParticipant = {
                 name: name,
-                email: email,
+                phone: phone,
+                eventId: selectedEventId,
                 present: false,
                 timestamp: new Date().toISOString()
             };
@@ -478,7 +955,7 @@
             participantsRef.push(newParticipant)
                 .then(() => {
                     participantNameInput.value = '';
-                    participantEmailInput.value = '';
+                    participantPhoneInput.value = '';
                 })
                 .catch((error) => {
                     console.error('Erro ao adicionar participante:', error);
@@ -513,9 +990,38 @@
             }
         }
         
+        // Atualizar estatísticas do sorteio
+        function updateDrawStats() {
+            const eventId = drawEventSelect.value;
+            
+            if (!eventId) {
+                totalParticipantsEl.textContent = '0';
+                presentParticipantsEl.textContent = '0';
+                absentParticipantsEl.textContent = '0';
+                return;
+            }
+            
+            const eventParticipants = participants.filter(p => p.eventId === eventId);
+            const total = eventParticipants.length;
+            const present = eventParticipants.filter(p => p.present).length;
+            const absent = total - present;
+            
+            totalParticipantsEl.textContent = total;
+            presentParticipantsEl.textContent = present;
+            absentParticipantsEl.textContent = absent;
+        }
+        
         // Realizar sorteio
         function performDraw() {
-            const presentParticipants = participants.filter(p => p.present);
+            const eventId = drawEventSelect.value;
+            
+            if (!eventId) {
+                alert('Por favor, selecione um evento para o sorteio.');
+                return;
+            }
+            
+            const eventParticipants = participants.filter(p => p.eventId === eventId);
+            const presentParticipants = eventParticipants.filter(p => p.present);
             
             if (presentParticipants.length === 0) {
                 winnerDisplay.textContent = 'Nenhum participante presente para o sorteio.';
@@ -540,24 +1046,43 @@
                         <div>
                             <div>🎉 Parabéns! 🎉</div>
                             <div style="font-size: 28px; margin-top: 10px;">${winner.name}</div>
-                            <div style="margin-top: 5px;">${winner.email}</div>
+                            <div style="margin-top: 5px;">${winner.phone}</div>
                         </div>
                     `;
+                    
+                    // Registrar ganhador no Firebase
+                    const newWinner = {
+                        eventId: eventId,
+                        winnerName: winner.name,
+                        winnerPhone: winner.phone,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    winnersRef.push(newWinner)
+                        .catch((error) => {
+                            console.error('Erro ao registrar ganhador:', error);
+                        });
                 }
             }, 100);
         }
         
         // Atualizar estatísticas
         function updateStats() {
-            const total = participants.length;
-            const present = participants.filter(p => p.present).length;
+            const eventId = statsEventSelect.value;
+            
+            if (!eventId) {
+                statsTotalEl.textContent = '0';
+                statsPresentEl.textContent = '0';
+                statsAbsentEl.textContent = '0';
+                statsPercentageEl.textContent = '0%';
+                return;
+            }
+            
+            const eventParticipants = participants.filter(p => p.eventId === eventId);
+            const total = eventParticipants.length;
+            const present = eventParticipants.filter(p => p.present).length;
             const absent = total - present;
             const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
-            
-            // Atualizar elementos
-            totalParticipantsEl.textContent = total;
-            presentParticipantsEl.textContent = present;
-            absentParticipantsEl.textContent = absent;
             
             statsTotalEl.textContent = total;
             statsPresentEl.textContent = present;
@@ -567,16 +1092,45 @@
         
         // Exportar dados
         function exportData() {
-            const dataStr = JSON.stringify(participants, null, 2);
+            const eventId = statsEventSelect.value;
+            
+            if (!eventId) {
+                alert('Por favor, selecione um evento para exportar os dados.');
+                return;
+            }
+            
+            const eventParticipants = participants.filter(p => p.eventId === eventId);
+            const eventWinners = winners.filter(w => w.eventId === eventId);
+            const event = events.find(e => e.id === eventId);
+            
+            const dataToExport = {
+                event: event,
+                participants: eventParticipants,
+                winners: eventWinners
+            };
+            
+            const dataStr = JSON.stringify(dataToExport, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'participantes.json';
+            link.download = `participantes_${event.name.replace(/\s+/g, '_')}.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+        
+        // Formatar data para exibição
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+        
+        // Formatar data e hora para exibição
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('pt-BR');
         }
     </script>
 </body>
