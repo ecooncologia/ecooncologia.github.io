@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Presença e Sorteio</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        :root {
+            --color-dark-blue: #012340;
+            --color-dark-green: #025939;
+            --color-green: #027333;
+            --color-light-green: #03A63C;
+            --color-bright-green: #04D939;
+            --color-white: #FFFFFF;
+            --color-light-gray: #F5F5F5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--color-light-gray);
+            color: var(--color-dark-blue);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--color-dark-blue), var(--color-dark-green));
+            color: var(--color-white);
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: var(--color-white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .tab.active {
+            background-color: var(--color-dark-green);
+            color: var(--color-white);
+        }
+        
+        .tab:not(.active):hover {
+            background-color: var(--color-light-green);
+            color: var(--color-white);
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: var(--color-white);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--color-dark-blue);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--color-green);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: var(--color-light-green);
+        }
+        
+        button.secondary {
+            background-color: var(--color-dark-blue);
+        }
+        
+        button.secondary:hover {
+            background-color: var(--color-dark-green);
+        }
+        
+        .participant-list {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .participant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .participant-item:nth-child(even) {
+            background-color: var(--color-light-gray);
+        }
+        
+        .participant-info {
+            flex: 1;
+        }
+        
+        .participant-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .present {
+            background-color: var(--color-bright-green);
+        }
+        
+        .absent {
+            background-color: #ff6b6b;
+        }
+        
+        .draw-section {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .winner-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: var(--color-light-gray);
+            border-radius: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .draw-btn {
+            background-color: var(--color-dark-blue);
+            font-size: 18px;
+            padding: 15px;
+        }
+        
+        .draw-btn:hover {
+            background-color: var(--color-dark-green);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--color-white);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-dark-green);
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .participant-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .participant-actions {
+                margin-top: 10px;
+                width: 100%;
+            }
+            
+            .action-btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Presença e Sorteio</h1>
+            <p>Controle de participantes e sorteios</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="presence">Lista de Presença</div>
+            <div class="tab" data-tab="draw">Sorteio</div>
+            <div class="tab" data-tab="stats">Estatísticas</div>
+        </div>
+        
+        <div class="tab-content active" id="presence">
+            <div class="form-group">
+                <label for="participantName">Nome do Participante</label>
+                <input type="text" id="participantName" placeholder="Digite o nome completo">
+            </div>
+            <div class="form-group">
+                <label for="participantEmail">E-mail</label>
+                <input type="email" id="participantEmail" placeholder="Digite o e-mail">
+            </div>
+            <button id="addParticipant">Adicionar Participante</button>
+            
+            <div class="participant-list" id="participantList">
+                <!-- Lista de participantes será carregada aqui -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="draw">
+            <div class="draw-section">
+                <h2>Sorteio de Participantes</h2>
+                <p>Clique no botão abaixo para sortear um participante presente</p>
+                
+                <div class="winner-display" id="winnerDisplay">
+                    O vencedor aparecerá aqui
+                </div>
+                
+                <button class="draw-btn" id="drawButton">Realizar Sorteio</button>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalParticipants">0</div>
+                        <div>Total de Inscritos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="presentParticipants">0</div>
+                        <div>Presentes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="absentParticipants">0</div>
+                        <div>Ausentes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="stats">
+            <h2>Estatísticas</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="statsTotal">0</div>
+                    <div>Total de Inscritos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statsPresent">0</div>
+                    <div>Presentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statsAbsent">0</div>
+                    <div>Ausentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statsPercentage">0%</div>
+                    <div>Taxa de Presença</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="secondary" id="exportData">Exportar Dados</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            databaseURL: "https://gerar-orcamento-bd4d1-default-rtdb.firebaseio.com/"
+        };
+        
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Referências
+        const participantsRef = database.ref('participants');
+        
+        // Elementos da UI
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const participantNameInput = document.getElementById('participantName');
+        const participantEmailInput = document.getElementById('participantEmail');
+        const addParticipantBtn = document.getElementById('addParticipant');
+        const participantList = document.getElementById('participantList');
+        const drawButton = document.getElementById('drawButton');
+        const winnerDisplay = document.getElementById('winnerDisplay');
+        const exportDataBtn = document.getElementById('exportData');
+        
+        // Elementos de estatísticas
+        const totalParticipantsEl = document.getElementById('totalParticipants');
+        const presentParticipantsEl = document.getElementById('presentParticipants');
+        const absentParticipantsEl = document.getElementById('absentParticipants');
+        const statsTotalEl = document.getElementById('statsTotal');
+        const statsPresentEl = document.getElementById('statsPresent');
+        const statsAbsentEl = document.getElementById('statsAbsent');
+        const statsPercentageEl = document.getElementById('statsPercentage');
+        
+        // Variáveis
+        let participants = [];
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadParticipants();
+            setupEventListeners();
+        });
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Ativar tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Mostrar conteúdo correspondente
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tabId) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Adicionar participante
+            addParticipantBtn.addEventListener('click', addParticipant);
+            
+            // Realizar sorteio
+            drawButton.addEventListener('click', performDraw);
+            
+            // Exportar dados
+            exportDataBtn.addEventListener('click', exportData);
+        }
+        
+        // Carregar participantes do Firebase
+        function loadParticipants() {
+            participantsRef.on('value', (snapshot) => {
+                participants = [];
+                participantList.innerHTML = '';
+                
+                snapshot.forEach((childSnapshot) => {
+                    const participant = childSnapshot.val();
+                    participant.id = childSnapshot.key;
+                    participants.push(participant);
+                    
+                    // Adicionar à lista
+                    addParticipantToUI(participant);
+                });
+                
+                updateStats();
+            });
+        }
+        
+        // Adicionar participante à UI
+        function addParticipantToUI(participant) {
+            const participantItem = document.createElement('div');
+            participantItem.className = 'participant-item';
+            participantItem.id = `participant-${participant.id}`;
+            
+            const statusClass = participant.present ? 'present' : 'absent';
+            const statusText = participant.present ? 'Presente' : 'Ausente';
+            
+            participantItem.innerHTML = `
+                <div class="participant-info">
+                    <strong>${participant.name}</strong>
+                    <div>${participant.email}</div>
+                </div>
+                <div class="participant-actions">
+                    <button class="action-btn ${statusClass}" data-id="${participant.id}" data-action="toggle">
+                        ${statusText}
+                    </button>
+                    <button class="action-btn secondary" data-id="${participant.id}" data-action="delete">
+                        Excluir
+                    </button>
+                </div>
+            `;
+            
+            participantList.appendChild(participantItem);
+            
+            // Adicionar event listeners aos botões
+            const toggleBtn = participantItem.querySelector('[data-action="toggle"]');
+            const deleteBtn = participantItem.querySelector('[data-action="delete"]');
+            
+            toggleBtn.addEventListener('click', () => togglePresence(participant.id));
+            deleteBtn.addEventListener('click', () => deleteParticipant(participant.id));
+        }
+        
+        // Adicionar novo participante
+        function addParticipant() {
+            const name = participantNameInput.value.trim();
+            const email = participantEmailInput.value.trim();
+            
+            if (!name) {
+                alert('Por favor, insira o nome do participante.');
+                return;
+            }
+            
+            const newParticipant = {
+                name: name,
+                email: email,
+                present: false,
+                timestamp: new Date().toISOString()
+            };
+            
+            participantsRef.push(newParticipant)
+                .then(() => {
+                    participantNameInput.value = '';
+                    participantEmailInput.value = '';
+                })
+                .catch((error) => {
+                    console.error('Erro ao adicionar participante:', error);
+                    alert('Erro ao adicionar participante. Tente novamente.');
+                });
+        }
+        
+        // Alternar status de presença
+        function togglePresence(participantId) {
+            const participantRef = database.ref(`participants/${participantId}`);
+            
+            participantRef.once('value')
+                .then((snapshot) => {
+                    const participant = snapshot.val();
+                    const newStatus = !participant.present;
+                    
+                    return participantRef.update({ present: newStatus });
+                })
+                .catch((error) => {
+                    console.error('Erro ao atualizar presença:', error);
+                });
+        }
+        
+        // Excluir participante
+        function deleteParticipant(participantId) {
+            if (confirm('Tem certeza que deseja excluir este participante?')) {
+                database.ref(`participants/${participantId}`).remove()
+                    .catch((error) => {
+                        console.error('Erro ao excluir participante:', error);
+                        alert('Erro ao excluir participante. Tente novamente.');
+                    });
+            }
+        }
+        
+        // Realizar sorteio
+        function performDraw() {
+            const presentParticipants = participants.filter(p => p.present);
+            
+            if (presentParticipants.length === 0) {
+                winnerDisplay.textContent = 'Nenhum participante presente para o sorteio.';
+                return;
+            }
+            
+            // Animação de sorteio
+            let counter = 0;
+            const maxIterations = 20;
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * presentParticipants.length);
+                winnerDisplay.textContent = presentParticipants[randomIndex].name;
+                
+                counter++;
+                if (counter >= maxIterations) {
+                    clearInterval(interval);
+                    
+                    // Resultado final
+                    const winnerIndex = Math.floor(Math.random() * presentParticipants.length);
+                    const winner = presentParticipants[winnerIndex];
+                    winnerDisplay.innerHTML = `
+                        <div>
+                            <div>🎉 Parabéns! 🎉</div>
+                            <div style="font-size: 28px; margin-top: 10px;">${winner.name}</div>
+                            <div style="margin-top: 5px;">${winner.email}</div>
+                        </div>
+                    `;
+                }
+            }, 100);
+        }
+        
+        // Atualizar estatísticas
+        function updateStats() {
+            const total = participants.length;
+            const present = participants.filter(p => p.present).length;
+            const absent = total - present;
+            const percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+            
+            // Atualizar elementos
+            totalParticipantsEl.textContent = total;
+            presentParticipantsEl.textContent = present;
+            absentParticipantsEl.textContent = absent;
+            
+            statsTotalEl.textContent = total;
+            statsPresentEl.textContent = present;
+            statsAbsentEl.textContent = absent;
+            statsPercentageEl.textContent = `${percentage}%`;
+        }
+        
+        // Exportar dados
+        function exportData() {
+            const dataStr = JSON.stringify(participants, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'participantes.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
